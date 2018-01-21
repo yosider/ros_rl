@@ -15,7 +15,7 @@ class ActorNetwork(object):
     input: state
     output: action
     """
-    def __init__(self, sess, state_size, action_size, action_bound, batch_size, mixing_rate, learning_rate):
+    def __init__(self, sess, state_size, action_size, action_bound, minibatch_size, mixing_rate, learning_rate):
         self.sess = sess
         self.tau = mixing_rate
         self.learning_rate = learning_rate
@@ -30,8 +30,8 @@ class ActorNetwork(object):
         # dQ/dθ = dQ/da * da/dθ
         params_grad = tf.gradients(self.model.output, self.params, -self.action_grad)
         # normalization
-        self.params_grad = [x/batch_size for x in params_grad]
-        #self.params_grad = list(map(lambda x: tf.div(x, batch_size), params_grad))
+        self.params_grad = [x/minibatch_size for x in params_grad]
+        #self.params_grad = list(map(lambda x: tf.div(x, minibatch_size), params_grad))
         # (grad, param) pairs
         grads = zip(self.params_grad, self.params)
         # optimizer

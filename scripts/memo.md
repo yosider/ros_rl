@@ -15,7 +15,7 @@ batch learning を開始する．
 ー学習完了・minibatch要求signalのmsgを追加して同期しつつ
   pros: 確実
   cons: 余計なtopicが増える; 生物学的でない？
-ーそもそもagentとbufferを分離しない
+ーそもそもagentとbufferを分離しない(master branch)
   pros: GPUつかえる; pub-subなしですむ
   cons: 生物学的でない？
         おなじnodeの別subとすればagentにアクセスできて並列性も保てる？別コアではないか．

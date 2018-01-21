@@ -22,17 +22,17 @@ class ReplayBuffer(object):
     def size(self):
         return self.count
 
-    def sample_batch(self, batch_size):
+    def sample_batch(self, minibatch_size):
         """
-        batch_size : １サンプルあたりのデータ数
+        minibatch_size : １サンプルあたりのデータ数
         """
         batch = []
 
-        if self.count < batch_size:
+        if self.count < minibatch_size:
             # 足りない場合はあるだけ全てサンプル．
             batch = random.sample(self.buffer, self.count)
         else:
-            batch = random.sample(self.buffer, batch_size)
+            batch = random.sample(self.buffer, minibatch_size)
 
         s_batch = np.array([exp[0] for exp in batch])
         a_batch = np.array([exp[1] for exp in batch])

@@ -51,7 +51,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Stepinfo.msg
-  Batch.msg
+#  Batch.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -20,7 +20,7 @@ class CriticNetwork(object):
     input: state, action
     output: Q(state, action)
     """
-    def __init__(self, sess, state_size, action_size, batch_size, mixing_rate, learning_rate):
+    def __init__(self, sess, state_size, action_size, mixing_rate, learning_rate):
         self.sess = sess
         self.tau = mixing_rate
         self.learning_rate = learning_rate
