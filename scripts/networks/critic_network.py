@@ -11,6 +11,8 @@ from keras.initializers import uniform
 from keras.optimizers import Adam
 import keras.backend as K
 
+from constants import *
+
 # for BN layer
 K.set_learning_phase(1)
 
@@ -20,8 +22,9 @@ class CriticNetwork(object):
     input: state, action
     output: Q(state, action)
     """
-    def __init__(self, sess, state_size, action_size, mixing_rate, learning_rate):
+    def __init__(self, sess, state_size, action_size, minibatch_size, mixing_rate, learning_rate):
         self.sess = sess
+        self.minibatch_size = minibatch_size
         self.tau = mixing_rate
         self.learning_rate = learning_rate
 
@@ -37,15 +40,16 @@ class CriticNetwork(object):
 #        self.optimize = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
 
         # dQ/da (pass to actor)
-        self.action_grad = tf.gradients(self.model.output, self.action)
+        self.action_grads = tf.gradients(self.model.output, self.action)
 
         self.sess.run(tf.global_variables_initializer())
 
     def train(self, state, action, target_q):
+        # input shape: [(BATCH_SIZE, STATE_SIZE), (BATCH_SIZE, ACTION_SIZE)]
         # TODO: can return loss value.
-        self.model.train_on_batch([state, action], target_q)
+        self.model.fit([state, action], target_q, batch_size=self.minibatch_size, epochs=2)
 
-    def train_target(self):
+    def update_target(self):
         weights = self.model.get_weights()
         target_weights = self.target_model.get_weights()
         for i in range(len(weights)):
@@ -58,7 +62,7 @@ class CriticNetwork(object):
     def predict_target(self, state, action):
         return self.target_model.predict([state, action])
 
-    def action_grad(self, state, action):
+    def action_gradients(self, state, action):
         """ return dQ/da """
         return self.sess.run(self.action_grads, feed_dict={
             self.state: state,

@@ -2,10 +2,9 @@
 # coding: utf-8
 
 import rospy
-from raspirobo.msg import Floats
 #TODO : try numpy_msg(Stepinfo)
 from rospy.numpy_msg import numpy_msg
-from ros_rl.msg import Stepinfo
+from ros_rl.msg import Stepinfo, Floats
 
 import numpy as np
 import gym

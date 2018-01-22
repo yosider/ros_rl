@@ -9,6 +9,8 @@ from keras.layers import Dense, Input, Lambda, BatchNormalization
 from keras.initializers import uniform
 import keras.backend as K
 
+from constants import *
+
 
 class ActorNetwork(object):
     """
@@ -40,12 +42,14 @@ class ActorNetwork(object):
         self.sess.run(tf.global_variables_initializer())
 
     def train(self, state, action_grad):
-        self.sess.run(self.optimize, feed_dict={
-            self.state: state,
-            self.action_grad: action_grad
-        })
+        # input shape: [(BATCH_SIZE, STATE_SIZE), (BATCH_SIZE, ACTION_SIZE)]
+        for i in range(0, BATCH_SIZE-MINIBATCH_SIZE, MINIBATCH_SIZE):
+            self.sess.run(self.optimize, feed_dict={
+                self.state: state[i:i+MINIBATCH_SIZE],
+                self.action_grad: action_grad[i:i+MINIBATCH_SIZE]
+                })
 
-    def train_target(self):
+    def update_target(self):
         weights = self.model.get_weights()
         target_weights = self.target_model.get_weights()
         for i in range(len(weights)):

@@ -14,7 +14,10 @@ CRITIC_LEARNING_RATE = 1e-3
 GAMMA = 0.99
 
 # --- Training (Data)
-MINIBATCH_SIZE = 64
+# size of data used in a single update
+MINIBATCH_SIZE = 16
+# size of data used in a single train (1 train means 32 times update)
+BATCH_SIZE = MINIBATCH_SIZE*32
 BUFFER_SIZE = 100000
 MAX_EPISODES = 200
 MAX_EP_STEPS = 1000
