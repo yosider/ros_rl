@@ -5,13 +5,12 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import Model
-from keras.layers import Dense, Input, Lambda, BatchNormalization, Activation
+from keras.layers import Dense, Input, Lambda, BatchNormalization
 from keras.initializers import uniform
 import keras.backend as K
 
 from constants import *
 
-#TODO
 MINIBATCH_SIZE = 64
 BATCH_SIZE = MINIBATCH_SIZE
 ACTOR_EPOCHS = 1
@@ -36,7 +35,7 @@ class ActorNetwork(object):
         # dQ/dθ = dQ/da * da/dθ
         params_grad = tf.gradients(self.model.output, self.params, -self.action_grad)
         # normalization
-        self.params_grad = [x/float(minibatch_size) for x in params_grad]
+        self.params_grad = [x/minibatch_size for x in params_grad]
         #self.params_grad = list(map(lambda x: tf.div(x, minibatch_size), params_grad))
         # (grad, param) pairs
         grads = zip(self.params_grad, self.params)
@@ -50,18 +49,14 @@ class ActorNetwork(object):
         # input shape: [(BATCH_SIZE, STATE_SIZE), (BATCH_SIZE, ACTION_SIZE)]
         #print 'state shape', state.shape
         #print 'grad shape', action_grad.shape
-        #indices = np.arange(BATCH_SIZE)
-#        for epoch in range(ACTOR_EPOCHS):
-#            for i in range(0, BATCH_SIZE, MINIBATCH_SIZE):
-#                i_ = max(BATCH_SIZE-1, i+MINIBATCH_SIZE)
-#                self.sess.run(self.optimize, feed_dict={
-#                    self.state: state[i:i_],
-#                    self.action_grad: action_grad[i:i_]
-#                    })
-        self.sess.run(self.optimize, feed_dict={
-            self.state: state,
-            self.action_grad: action_grad,
-            })
+        indices = np.arange(BATCH_SIZE)
+        for epoch in range(ACTOR_EPOCHS):
+            for i in range(0, BATCH_SIZE, MINIBATCH_SIZE):
+                i_ = max(BATCH_SIZE-1, i+MINIBATCH_SIZE)
+                self.sess.run(self.optimize, feed_dict={
+                    self.state: state[i:i_],
+                    self.action_grad: action_grad[i:i_]
+                    })
             #np.random.shuffle(indices)
             #state = state[indices]
             #action_grad = action_grad[indices]
@@ -82,12 +77,10 @@ class ActorNetwork(object):
 
     def create_actor_network(self, state_size, action_size, action_bound):
         state = Input(shape=[state_size])  # placeholder
-        h = Dense(400, kernel_initializer='he_uniform')(state)
+        h = Dense(400, kernel_initializer='he_uniform', activation='relu')(state)
         h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-        h = Dense(300, kernel_initializer='he_uniform')(h)
+        h = Dense(300, kernel_initializer='he_uniform', activation='relu')(h)
         h = BatchNormalization()(h)
-        h = Activation('relu')(h)
         action = Dense(action_size, kernel_initializer='random_uniform', activation='tanh')(h)
         action = Lambda(lambda x: x * action_bound)(action)
         model = Model(inputs=state, outputs=action)

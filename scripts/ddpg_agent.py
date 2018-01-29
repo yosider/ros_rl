@@ -14,6 +14,8 @@ from networks.buffers import ReplayBuffer
 from networks.constants import *
 from utils import *
 
+from pprint import pprint
+
 class DDPG_agent():
     def __init__(self):
         self.sub_stepinfo = rospy.Subscriber("/ros_rl/stepinfo", Stepinfo, self.step, queue_size=1, buff_size=2**24)
@@ -25,6 +27,7 @@ class DDPG_agent():
         self.critic = CriticNetwork(self.sess, STATE_SIZE, ACTION_SIZE, MINIBATCH_SIZE, TAU, CRITIC_LEARNING_RATE)
         self.replay_buffer = ReplayBuffer(BUFFER_SIZE)
         self.graph = tf.get_default_graph()
+        # TODO: confirm
 
         self.state = np.zeros([1, STATE_SIZE])
         self.action = np.zeros(ACTION_SIZE)
@@ -42,9 +45,14 @@ class DDPG_agent():
             self.count = 0
 
         with self.graph.as_default():
+            #with open('graph.txt', 'w') as f:
+            #    ops = self.graph.get_operations()
+            #    for op in ops:
+            #        f.write(str(ops) + '\n')
+            #exit(1)
             action = self.actor.predict(next_state)[0]
             #assert action.shape == (ACTION_SIZE, )
-            print "action:", action
+            #print "action:", action
             self.action = action
             self.state = next_state
             self.pub_action.publish(action)
@@ -82,7 +90,5 @@ class DDPG_agent():
 if __name__ == '__main__':
     DDPG_agent()
     rospy.init_node('ddpg_agent', anonymous=True)
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down \"ddpg_agent\" node...")
+    rospy.spin()
+    print("Shutting down \"ddpg_agent\" node...")

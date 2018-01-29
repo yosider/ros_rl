@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import Model
-from keras.layers import Dense, Input, Lambda, BatchNormalization, Activation
+from keras.layers import Dense, Input, Lambda, BatchNormalization
 from keras.layers.merge import concatenate
 from keras.initializers import uniform
 from keras.optimizers import Adam
@@ -14,7 +14,7 @@ import keras.backend as K
 from constants import *
 
 # for BN layer
-#K.set_learning_phase(1)
+K.set_learning_phase(1)
 
 
 class CriticNetwork(object):
@@ -43,14 +43,12 @@ class CriticNetwork(object):
         self.action_grads = tf.gradients(self.model.output, self.action)
 
         #TODO:
-        #self.sess.run(tf.global_variables_initializer()) 
+        #self.sess.run(tf.global_variables_initializer())
 
     def train(self, state, action, target_q):
         # input shape: [(BATCH_SIZE, STATE_SIZE), (BATCH_SIZE, ACTION_SIZE)]
         # TODO: can return loss value.
         self.model.fit([state, action], target_q, batch_size=self.minibatch_size, epochs=CRITIC_EPOCHS, verbose=0)
-        #TODO:
-        #self.model.train_on_batch([state, action], target_q)
 
     def update_target(self):
         weights = self.model.get_weights()
@@ -75,11 +73,10 @@ class CriticNetwork(object):
     def create_critic_network(self, state_size, action_size):
         state = Input(shape=[state_size])  # placeholder
         action = Input(shape=[action_size])
-        h = Dense(400, kernel_initializer='he_uniform')(state)
+        h = Dense(64, kernel_initializer='he_uniform', activation='relu')(state)
         h = BatchNormalization()(h)
-        h = Activation('relu')(h)
         h = concatenate([h, action])
-        h = Dense(300, kernel_initializer='he_uniform', activation='relu')(h)
+        h = Dense(32, kernel_initializer='he_uniform', activation='relu')(h)
         qval = Dense(action_size, kernel_initializer='random_uniform', activation='linear')(h)
         model = Model(inputs=[state,action], outputs=qval)
         adam = Adam(lr=self.learning_rate)

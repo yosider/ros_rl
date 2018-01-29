@@ -31,7 +31,6 @@ class ReplayBuffer(object):
         else:
             batch = random.sample(self.buffer, batch_size)
 
-        print(batch[0])
         s_batch = np.array([exp[0] for exp in batch])
         a_batch = np.array([exp[1] for exp in batch])
         r_batch = np.array([exp[2] for exp in batch])
