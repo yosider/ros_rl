@@ -2,10 +2,13 @@
 # coding: utf-8
 
 import numpy as np
+import gym
 
 import cv2
 from cv_bridge import CvBridge
 from ros_rl.msg import Stepinfo, Batch
+
+from networks.constants import *
 
 def pack_stepinfo(s, r, t, i):
     # TODO: CvBridge() for 2dim.
@@ -43,6 +46,18 @@ def unpack_batch(batch):
     s2 = CvBridge().imgmsg_to_cv2(batch.next_state)
     return s, a, r, t, s2
 
+def render_result(actor, critic):
+    env = gym.make(ENV_NAME)
+    for ep_num in range(5):
+        s, t = env.reset(), False
+        ep_reward = 0
+        ep_step = 0
+        while not t:
+            env.render()
+            action = actor.predict(np.array(s).reshape(1,-1))[0]
+            s, r, t, i = env.step(action)
+            ep_reward += r
+        print('Episode %d finished at step %d, reward %d.' % (ep_num, ep_step, ep_reward))
 
 
 

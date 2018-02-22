@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
+from datetime import datetime
 
 import rospy
 #TODO : try numpy_msg(Stepinfo)
@@ -15,14 +16,11 @@ from matplotlib import pyplot as plt
 from utils import *
 from networks.constants import *
 
-# Log
-LOGDIR = '/home/yosider/robo_ws/src/ros_rl/logs/' + ENV_NAME + '/' + str(time.time()) + '/'
-if not os.path.exists(LOGDIR):
-    os.makedirs(LOGDIR)
 
 class Env():
-    def __init__(self):
+    def __init__(self, rendering):
         self.env = ENV
+        self.rendering = rendering
 
         self.sub_action = rospy.Subscriber("/ros_rl/action", numpy_msg(Floats), self.step, queue_size=1, buff_size=2**24)
         self.pub_stepinfo = rospy.Publisher("/ros_rl/stepinfo", Stepinfo, queue_size=1)
@@ -51,6 +49,8 @@ class Env():
         # shape: (self.env.action_space.shape, )
 
         s, r, t, i = self.env.step(action)
+        if self.rendering:
+            self.env.render()
 
         self.ep_step += 1
         self.ep_reward += r
@@ -70,6 +70,8 @@ class Env():
 
 
 if __name__ == '__main__':
-    env = Env()
+    env = Env(RENDERING)
     rospy.spin()
-    env.visualize_log()
+    if LOGGING:
+        env.visualize_log()
+    print('Shutting down the node...')

@@ -27,4 +27,10 @@ criticがpublishするQ値（の予測誤差(いつ予測？)）または
 入力信号の予測誤差に基づいてsignalをpublish,
 bufferはそれをsubscribeして，想起される記憶をpublish.
 環境からの入力とmeanをとる？
+
+# DEBUG
+params_grad の次元確認済み
+  pendulumの場合のshape:
+  actor.output[None,1], actor.params[10], actor.params_grad[10], 
+  critic.action_grads[1]
 　

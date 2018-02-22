@@ -33,12 +33,12 @@ TRAIN_INTERVAL = 1
 MAX_EPISODES = 200
 MAX_EP_STEPS = 300
 GAMMA = 0.99
-LOGDIR = 'logs/' + str(int(time.time())) + '/'
+LOGDIR = 'logs/' + '/nonros/' + 'h64s/' #str(int(time.time())) + '/'
 if not os.path.exists(LOGDIR):
     os.makedirs(LOGDIR)
-else:
-    print('LOGDIR already exists. You are (un)lucky :)')
-    exit(1)
+#else:
+#    print('LOGDIR already exists. You are (un)lucky :)')
+#    exit(1)
 
 # log variables
 reward_log = []

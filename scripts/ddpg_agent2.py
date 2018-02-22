@@ -9,11 +9,15 @@ from ros_rl.msg import Stepinfo, Floats
 import numpy as np
 import tensorflow as tf
 
-from networks.actor_network import ActorNetwork
-from networks.critic_network import CriticNetwork
+from networks.networks2 import ActorNetwork
+from networks.networks2 import CriticNetwork
 from networks.buffers import ReplayBuffer
 from networks.constants import *
 from utils import *
+
+LOGDIR = '/home/yosider/robo_ws/src/ros_rl/logs/' + ENV_NAME + '/' + str(datetime.now()) + '_CKPT_test2' + '/'
+if not os.path.exists(LOGDIR):
+    os.makedirs(LOGDIR)
 
 class DDPG_agent():
     def __init__(self):
@@ -23,9 +27,10 @@ class DDPG_agent():
 
         self.sess = tf.InteractiveSession()
         self.actor = ActorNetwork(self.sess, STATE_SIZE, ACTION_SIZE, ACTION_BOUND, MINIBATCH_SIZE, TAU, ACTOR_LEARNING_RATE)
-        self.critic = CriticNetwork(self.sess, STATE_SIZE, ACTION_SIZE, MINIBATCH_SIZE, TAU, CRITIC_LEARNING_RATE)
+        self.critic = CriticNetwork(self.sess, STATE_SIZE, ACTION_SIZE, MINIBATCH_SIZE, TAU, CRITIC_LEARNING_RATE, self.actor.get_num_trainable_vars())
         self.replay_buffer = ReplayBuffer(BUFFER_SIZE)
         self.graph = tf.get_default_graph()
+        self.sess.run(tf.global_variables_initializer())
         # TODO: confirm
 
         self.state = np.zeros([1, STATE_SIZE])
@@ -40,9 +45,9 @@ class DDPG_agent():
         self.replay_buffer.add(self.state[0], self.action, reward, terminal, next_state[0])
         self.count += 1
 
-        if TRAINING and self.count >= BATCH_SIZE:
+        if self.count >= BATCH_SIZE:
             self.train()
-            self.count = 0
+            #self.count = 0
             self.train_times += 1
 
         with self.graph.as_default():
@@ -74,7 +79,6 @@ class DDPG_agent():
             # train critic
             self.critic.train(s_batch, a_batch, target_R)
 
-            # train actor
             pred_action = self.actor.predict(s_batch)
             dqda = self.critic.action_gradients(s_batch, pred_action)
             self.actor.train(s_batch, dqda)
@@ -89,22 +93,7 @@ if __name__ == '__main__':
     rospy.init_node('ddpg_agent', anonymous=True)
     rospy.spin()
     
-    if LOGGING:
-        print("Saving models...")
-        actor_file = LOGDIR + 'actor-batch' + str(agent.train_times) + '.h5'
-        actor_target_file = LOGDIR + 'actor_target-batch' + str(agent.train_times) + '.h5'
-        critic_file = LOGDIR + 'critic-batch' + str(agent.train_times) + '.h5'
-        critic_target_file = LOGDIR + 'critic_target-batch' + str(agent.train_times) + '.h5'
-        agent.actor.model.save_weights(actor_file)
-        agent.actor.target_model.save_weights(actor_target_file)
-        agent.critic.model.save_weights(critic_file)
-        agent.critic.target_model.save_weights(critic_target_file)
-
-    if RENDER_AFTER_TRAIN:
-        print('Rendering result...')
-        actor = agent.actor.model
-        critic = agent.critic.model
-        render_result(actor, critic)
-        
-    
+    #print("Saving models...")
+    #agent.actor.model.save(LOGDIR + '/actor-batch' + str(agent.train_times) + '.tflearn')
+    #agent.critic.model.save(LOGDIR + '/critic-batch' + str(agent.train_times) + '.tflearn')
     print("Shutting down the node...")
